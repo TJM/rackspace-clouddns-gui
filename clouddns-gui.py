@@ -335,6 +335,86 @@ def change_accountId():
     return redirect("/domains")
 
 
+@app.route("/domains/<domainname>/applyTemplate", methods=['GET','POST'])
+@app.route("/domains/<domainname>/applyTemplate/<templateName>", methods=['GET','POST'])
+def apply_template(domainname=None, templateName=None):
+    """Handles applying a (json) template of records to a domain"""
+
+    # Set Account ID
+    setAccount()
+    
+    # Load Domain Object
+    domain = g.raxdns.get_domain(name=domainname)
+
+    # Load the Template
+    if templateName is None:
+        templateName = "googleApps"
+    #templateFileName = 'dns/' . templateName . '.json'
+    #That seems unsafe, hardcode for now
+    templateFileName = 'dns/googleApps.json'
+    jsObj = json.loads(render_template(templateFileName, domainname=domainname))['records']
+
+    if request.method == 'GET': 
+        ## GET: Present a page to the user explaining the records that will be removed
+        ##      and added with a commit button at the bottom.
+
+        # Load domain records
+        allRecords = domain.get_records()
+
+        # Combine the records with the json for display
+        for obj in jsObj:
+            allRecords._names.append(obj['name'])
+            allRecords._records.append(obj)
+
+        # Render the proposed changes (temporary)
+        return render_template('index.html', domainobj=domain, domainname=domainname,
+            records=allRecords)
+            #domainlist=domainlist, records=allRecords, accountId=accountId)
+            # TODO: Put a "submit" button (probably a new template?)
+
+    else:
+    ## POST: COMMIT the actions specified by the user in the "GET" page
+        if request.form['confirmation'] and request.form['confirmation'] == 'APPLY_TEMPLATE':
+            oldRecords = domain.get_records()
+            newRecords = []
+            delRecords = []
+
+            for obj in jsObj:
+                # We'll have a priority field for MX/SRV records
+                if obj['type'] in ['MX', 'SRV']:
+                    newRecords.append([
+                    obj['name'],
+                    obj['data'],
+                    obj['type'],
+                    int(obj['ttl']),
+                    obj['priority']])
+
+                # Submit without priority for anything else
+                else:
+                    newRecords.append([
+                        obj['name'],
+                        obj['data'],
+                        obj['type'],
+                        int(obj['ttl'])])
+
+            # TODO: Parse the "oldRecords" to figure out which ones to delete.
+            #for record in records:
+            #    print record.name;
+
+            # Apply Changes
+            ####domain.delete_records(delRecords);
+            domain.create_records(newRecords);
+
+            # Flash a friendly message
+            flash("Template Applied: %s Record(s) added, %s Record(s) deleted" % (len(newRecords), len(delRecords.count)))
+
+            return redirect("/domains/%s/%s" % (accountId, domainname))
+           
+        else: # Perhaps support selecting different templates?
+            return "Not Yet Implemented"
+
+
+
 # No Application route, this is an internal function
 def getAccount():
     """Internal Function to get the accountId (wrapper to python-clouddns function)"""

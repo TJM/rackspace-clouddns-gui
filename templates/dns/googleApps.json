@@ -1,0 +1,106 @@
+{
+  "records" : [
+  {
+    "name" : "{{domainname}}",
+    "priority" : 1,
+    "type" : "MX",
+    "data" : "aspmx.l.google.com",
+    "ttl" : 3600
+  }, {
+    "name" : "{{domainname}}",
+    "priority" : 5,
+    "type" : "MX",
+    "data" : "alt1.aspmx.l.google.com",
+    "ttl" : 3600
+  }, {
+    "name" : "{{domainname}}",
+    "priority" : 5,
+    "type" : "MX",
+    "data" : "alt2.aspmx.l.google.com",
+    "ttl" : 3600
+  }, {
+    "name" : "{{domainname}}",
+    "priority" : 10,
+    "type" : "MX",
+    "data" : "aspmx2.googlemail.com",
+    "ttl" : 3600
+  }, {
+    "name" : "{{domainname}}",
+    "priority" : 10,
+    "type" : "MX",
+    "data" : "aspmx3.googlemail.com",
+    "ttl" : 3600
+  }, {
+    "name" : "mail.{{domainname}}",
+    "type" : "CNAME",
+    "comment" : "GoogleApps Mail",
+    "data" : "ghs.google.com",
+    "ttl" : 3600
+  }, {
+    "name" : "calendar.{{domainname}}",
+    "type" : "CNAME",
+    "comment" : "GoogleApps Calendar",
+    "data" : "ghs.google.com",
+    "ttl" : 3600
+  }, {
+    "name" : "docs.{{domainname}}",
+    "type" : "CNAME",
+    "comment" : "GoogleApps Docs",
+    "data" : "ghs.google.com",
+    "ttl" : 3600
+  }, {
+    "name" : "start.{{domainname}}",
+    "type" : "CNAME",
+    "comment" : "GoogleApps Start Page",
+    "data" : "ghs.google.com",
+    "ttl" : 3600
+  }, {
+    "name" : "sites.{{domainname}}",
+    "type" : "CNAME",
+    "comment" : "GoogleApps Sites",
+    "data" : "ghs.google.com",
+    "ttl" : 3600
+  }, {
+    "name" : "video.{{domainname}}",
+    "type" : "CNAME",
+    "comment" : "GoogleApps Video",
+    "data" : "ghs.google.com",
+    "ttl" : 3600
+  }, {
+    "name" : "{{domainname}}",
+    "type" : "TXT",
+    "comment" : "SPF Record",
+    "data" : "v=spf1 include:_spf.google.com a ~all",
+    "ttl" : 3600
+ }, {
+    "name" : "_xmpp-server._tcp.{{domainname}}",
+    "priority" : 5,
+    "type" : "SRV",
+    "data" : "5 5269 xmpp-server.l.google.com",
+    "ttl" : 3600
+  }, {
+    "name" : "_xmpp-server._tcp.{{domainname}}",
+    "priority" : 20,
+    "type" : "SRV",
+    "data" : "5 5269 alt1.xmpp-server.l.google.com",
+    "ttl" : 3600
+  }, {
+    "name" : "_xmpp-server._tcp.{{domainname}}",
+    "priority" : 20,
+    "type" : "SRV",
+    "data" : "5 5269 alt2.xmpp-server.l.google.com",
+    "ttl" : 3600
+  }, {
+    "name" : "_xmpp-server._tcp.{{domainname}}",
+    "priority" : 20,
+    "type" : "SRV",
+    "data" : "5 5269 alt3.xmpp-server.l.google.com",
+    "ttl" : 3600
+  }, {
+    "name" : "_xmpp-server._tcp.{{domainname}}",
+    "priority" : 20,
+    "type" : "SRV",
+    "data" : "5 5269 alt4.xmpp-server.l.google.com",
+    "ttl" : 3600
+  } ]
+}
