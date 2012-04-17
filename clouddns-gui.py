@@ -348,11 +348,12 @@ def apply_template(domainname=None, templateName=None):
 
     # Load the Template
     if templateName is None:
-        templateName = "googleApps"
+        # Perhaps prompt user for a template, or default
+        templateName = "googleApps" # default is google apps for now
     #templateFileName = 'dns/' . templateName . '.json'
     #That seems unsafe, hardcode for now
     templateFileName = 'dns/googleApps.json'
-    jsObj = json.loads(render_template(templateFileName, domainname=domainname))['records']
+    template = json.loads(render_template(templateFileName, domainname=domainname))
 
     if request.method == 'GET': 
         ## GET: Present a page to the user explaining the records that will be removed
@@ -362,10 +363,12 @@ def apply_template(domainname=None, templateName=None):
         allRecords = domain.get_records()
 
         # Combine the records with the json for display
-        for obj in jsObj:
+        for obj in template['records']:
             allRecords._names.append(obj['name'])
             allRecords._records.append(obj)
 
+        # Flash
+        flash('Proposed Changes -- No Changes have been made yet!', 'warning')
         # Render the proposed changes (temporary)
         return render_template('index.html', domainobj=domain, domainname=domainname,
             records=allRecords)
@@ -379,7 +382,7 @@ def apply_template(domainname=None, templateName=None):
             newRecords = []
             delRecords = []
 
-            for obj in jsObj:
+            for obj in template['records']:
                 # We'll have a priority field for MX/SRV records
                 if obj['type'] in ['MX', 'SRV']:
                     newRecords.append([
