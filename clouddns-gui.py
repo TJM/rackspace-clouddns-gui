@@ -350,6 +350,9 @@ def apply_template(domainname=None, templateName=None):
     if templateName is None:
         # Perhaps prompt user for a template, or default
         templateName = "googleApps" # default is google apps for now
+
+    g.templateName = templateName
+
     #templateFileName = 'dns/' . templateName . '.json'
     #That seems unsafe, hardcode for now
     templateFileName = 'dns/googleApps.json'
@@ -409,9 +412,9 @@ def apply_template(domainname=None, templateName=None):
             domain.create_records(newRecords);
 
             # Flash a friendly message
-            flash("Template Applied: %s Record(s) added, %s Record(s) deleted" % (len(newRecords), len(delRecords.count)))
+            flash("Template Applied: %s Record(s) added, %s Record(s) deleted" % (len(newRecords), len(delRecords)))
 
-            return redirect("/domains/%s/%s" % (accountId, domainname))
+            return redirect("/domains/%s" % domainname)
            
         else: # Perhaps support selecting different templates?
             return "Not Yet Implemented"
