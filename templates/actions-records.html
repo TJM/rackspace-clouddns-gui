@@ -1,4 +1,13 @@
-        {% if records %}
+        {% if g.templateName %}
+
+        <hr>
+        <h4>Apply Template Changes: {{g.templateName}}</h4>
+        <form method="post" action="/domains/{{ domainname }}/applyTemplate/{{g.templateName}}">
+            <button class="btn btn-warning btn-small" name="confirmation" value="APPLY_TEMPLATE" type="submit">Apply Changes</button>
+        </form>
+
+        {% else %}
+
             <hr>
             <h4>Add a record to {{domainname}}:</h4>
 
@@ -57,6 +66,7 @@
             </table>
             </form>
 
+            {% if records %}
         <hr>
         <p>
             <h4>Adjust TTL's for all records:</h4>
@@ -67,14 +77,14 @@
             <button class="btn btn-warning btn-small" type="submit">Set TTL's</button>
         </form>
 
-        {% else %}
+            {% else %}
 
         <p style="font-weight: bold;">
             No records found.
         </p>
         No records found for {{domainname}}.
 
-        {% endif %}
+            {% endif %}
 
         <hr>
         <h4>Domain Comment</h4>
@@ -91,3 +101,4 @@
             <input type="text" class="span3" name="confirmation">
             <button type="submit" class="btn btn-small btn-danger">Delete Domain</button>
         </form>
+        {% endif %}
