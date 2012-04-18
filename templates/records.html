@@ -13,10 +13,11 @@
     </thead>
     <tbody>
 {% for record in records %}
-    <tr{% if record.id in g.delRecordIds %} bgcolor=red{% endif %}>
+{% set toDelete = (record.id in g.delRecordIds) %}
+    <tr{% if toDelete %} class='highlight' {% endif %}>
         <form method="post" action="/domains/{{domainname}}/{{record.id}}/update">
         <td>
-            {% if record.id in g.delRecordIds %}<text color=red>(DEL)</text>{% endif %}
+            {% if toDelete %}(DELETE){% endif %}
             {{ record.id }}
         </td>
         <td>
@@ -24,6 +25,7 @@
         </td>
         <td>
             {{ record.type }}
+        </td>
         <td>
         {% if record.type == "MX" %}
             {{ record.priority }}
