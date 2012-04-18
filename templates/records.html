@@ -13,9 +13,10 @@
     </thead>
     <tbody>
 {% for record in records %}
-    <tr>
+    <tr{% if record.id in g.delRecordIds %} bgcolor=red{% endif %}>
         <form method="post" action="/domains/{{domainname}}/{{record.id}}/update">
         <td>
+            {% if record.id in g.delRecordIds %}<text color=red>(DEL)</text>{% endif %}
             {{ record.id }}
         </td>
         <td>
