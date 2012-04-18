@@ -13,11 +13,16 @@
     </thead>
     <tbody>
 {% for record in records %}
-{% set toDelete = (record.id in g.delRecordIds) %}
-    <tr{% if toDelete %} class='highlight' {% endif %}>
+    {% if not record.id %}
+    {%    set highlightClass = 'mark_add' %}
+    {% elif record.id in g.delRecordIds %}
+    {%    set highlightClass = 'mark_delete' %}
+    {% endif %}
+    <tr{% if highlightClass %} class='{{highlightClass}}' {% endif %}>
         <form method="post" action="/domains/{{domainname}}/{{record.id}}/update">
         <td>
-            {% if toDelete %}(DELETE){% endif %}
+            {% if highlightClass == 'mark_delete' %}(DEL){% endif %}
+            {% if highlightClass == 'mark_add' %}(ADD){% endif %}
             {{ record.id }}
         </td>
         <td>
