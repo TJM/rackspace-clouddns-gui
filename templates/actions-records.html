@@ -94,6 +94,15 @@
         </form>
 
         <hr>
+        <h4>Apply DNS Template</h4>
+        <form method="post" action="/domains/{{ domainname }}/applyTemplate">
+            <!-- future home of a drop down to select available templates -->
+            <H5> Apply Google Apps DNS Template (more coming soon) </H5>
+            <button class="btn btn-warning btn-small" type="submit">Apply DNS Template</button>
+        </form>
+
+
+        <hr>
         <h4>Want to delete this domain?</h4>
         Type <em>REALLYDELETE</em> in the text field and press Delete Domain. <br>
         <form method="post" action="/domains/delete" class="form-inline">
