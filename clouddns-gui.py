@@ -344,81 +344,153 @@ def apply_template(domainname=None, templateName=None):
     setAccount()
     
     # Load Domain Object
+    if domainname is None:
+        flash('Invalid Domain Name!', 'error')
+        return redirect("/domains")
+
     domain = g.raxdns.get_domain(name=domainname)
 
+    # Load domain records
+    records = domain.get_records()
+
     # Load the Template
-    if templateName is None:
+    if templateName is None and 'templateName' in request.form:
         # Perhaps prompt user for a template, or default
+        templateName = request.form['templateName']
+    else:
         templateName = "googleApps" # default is google apps for now
 
-    g.templateName = templateName
 
-    #templateFileName = 'dns/' . templateName . '.json'
-    #That seems unsafe, hardcode for now
+    # TODO: Somehow sanitize templatename
+    # Validate - this is nasty, but it will work for now
+    validTemplateNames = ['googleApps', 'testing']
+
+    if templateName not in validTemplateNames:
+        flash('Invalid Template Name!', 'error')
+        return redirect("/domains/%s" % domainname)
+
+    g.templateName = templateName # set the template name in g, so that html can see it
+    templateFileName = 'dns/' + templateName + '.json'
+    app.logger.debug('templateFileName: %s (will be overridden)' % templateFileName)
+    # Override for now
     templateFileName = 'dns/googleApps.json'
     template = json.loads(render_template(templateFileName, domainname=domainname))
 
-    if request.method == 'GET': 
-        ## GET: Present a page to the user explaining the records that will be removed
-        ##      and added with a commit button at the bottom.
+    # Process the Changes
+    addRecords = jsonToRecordsList(template['records'])
+    delRecordIds = conflictingRecords(records, addRecords)
+    g.delRecordIds = delRecordIds # Make it available to HTML templates
 
-        # Load domain records
-        allRecords = domain.get_records()
+    # One last bit of confirmation
+    if 'confirmation' in request.form and request.form['confirmation'] == 'APPLY_TEMPLATE':
+        # Apply Changes
+        if len(delRecordIds) > 0:
+            response = domain.delete_records(delRecordIds);
+            output = g.raxdns.wait_for_async_request(response)
+            app.logger.debug(output)
+        if len(addRecords) > 0:
+            actuallyAdded = domain.create_records(addRecords);
 
-        # Combine the records with the json for display
+        # Flash a friendly message
+        flash("Template Applied: %s Record(s) added, %s Record(s) deleted" % (len(actuallyAdded), len(delRecordIds)))
+
+        return redirect("/domains/%s" % domainname)
+           
+    else:
+        # Converts json (records) to RecordResults object format and appends
+        #   to the return of domain.get_records() to send to gui functions
         for obj in template['records']:
-            allRecords._names.append(obj['name'])
-            allRecords._records.append(obj)
+            records._names.append(obj['name'])
+            records._records.append(obj)
 
         # Flash
-        flash('Proposed Changes -- No Changes have been made yet!', 'warning')
-        # Render the proposed changes (temporary)
-        return render_template('index.html', domainobj=domain, domainname=domainname,
-            records=allRecords)
-            #domainlist=domainlist, records=allRecords, accountId=accountId)
-            # TODO: Put a "submit" button (probably a new template?)
+        flash('Proposed Changes -- No Changes have been made yet! Apply Changes below', 'warning')
+        flash('New Records: %s -- Deleted Records %s' % (len(addRecords), len(delRecordIds)), 'warning')
 
+        # Render the proposed changes
+        return render_template('index.html', domainobj=domain, domainname=domainname, records=records)
+
+ 
+######################
+### UTILITY FUNCTIONS
+######################
+
+# Finds conflicting records (same name and type)
+# RETURNS: recordList of records to delete and a list of recordIds
+def conflictingRecords(oldRecords, newRecords):
+    delRecordIds = []
+    domainname = oldRecords.domain.name
+
+    for old in oldRecords:
+        for new in newRecords:
+            if old.name == new[0]:
+                # TODO: Special Processing for SRV/TXT
+                if old.type == new[2]:
+                    delRecordIds.append(old.id)
+                    break
+                if not old.name == domainname: #If its not the domain name (@)
+                    delRecordIds.append(old.id)
+                    break
+
+    return delRecordIds
+
+
+# Converts RecordResults format to RecordList format
+# ... wouldn't it be nice if the API used the same type?
+def recordResultToList(oldrecord):
+    newRecord = []
+    # We'll have a priority field for MX/SRV records
+    if oldrecord.type in ['MX', 'SRV']:
+        newRecord = [
+            oldrecord.name,
+            oldrecord.data,
+            oldrecord.type,
+            int(oldrecord.ttl),
+            oldrecord.priority]
+
+    # Submit without priority for anything else
     else:
-    ## POST: COMMIT the actions specified by the user in the "GET" page
-        if request.form['confirmation'] and request.form['confirmation'] == 'APPLY_TEMPLATE':
-            oldRecords = domain.get_records()
-            newRecords = []
-            delRecords = []
+        newRecord = [
+            oldrecord.name,
+            oldrecord.data,
+            oldrecord.type,
+            int(oldrecord.ttl)]
 
-            for obj in template['records']:
-                # We'll have a priority field for MX/SRV records
-                if obj['type'] in ['MX', 'SRV']:
-                    newRecords.append([
-                    obj['name'],
-                    obj['data'],
-                    obj['type'],
-                    int(obj['ttl']),
-                    obj['priority']])
+    return newRecord
 
-                # Submit without priority for anything else
-                else:
-                    newRecords.append([
-                        obj['name'],
-                        obj['data'],
-                        obj['type'],
-                        int(obj['ttl'])])
 
-            # TODO: Parse the "oldRecords" to figure out which ones to delete.
-            #for record in records:
-            #    print record.name;
+# Converts json (records) to recordList format which is suitable to send
+#   to add/delete_records()
+def jsonToRecordsList(jsonRecords):
+    newRecords = []
+    for obj in jsonRecords:
+        # comment is optional
+	if 'comment' in obj:
+            comment = obj['comment']
+        else:
+            comment = ''
 
-            # Apply Changes
-            ####domain.delete_records(delRecords);
-            domain.create_records(newRecords);
+       # We'll have a priority field for MX/SRV records
+        if obj['type'] in ['MX', 'SRV']:
+            newRecords.append([
+                obj['name'],
+                obj['data'],
+                obj['type'],
+                int(obj['ttl']),
+                int(obj['priority']),
+                comment
+                ])
+        # Submit without priority for anything else
+        else:
+            newRecords.append([
+                obj['name'],
+                obj['data'],
+                obj['type'],
+                int(obj['ttl']),
+                comment
+		])
 
-            # Flash a friendly message
-            flash("Template Applied: %s Record(s) added, %s Record(s) deleted" % (len(newRecords), len(delRecords)))
-
-            return redirect("/domains/%s" % domainname)
-           
-        else: # Perhaps support selecting different templates?
-            return "Not Yet Implemented"
-
+    return newRecords
 
 
 # No Application route, this is an internal function
