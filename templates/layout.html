@@ -77,14 +77,20 @@
     <div class="container-fluid">
       <div class="row-fluid">
         <div class="span12">
-          {% with messages = get_flashed_messages() %}
+          {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
-              {% for message in messages %}
-              <div class="alert alert-info">
-                <strong>Task completed.</strong><br>
-                {{ message }}
-              </div>
+            <div class="alert alert-info">
+              <ul class="flashes">
+              {% for category, message in messages %}
+                {% if not category or category == 'message' %}
+                  <strong>Task completed.</strong><br>
+                  {{ message }}
+                {% else %}
+                  <li class="alert-{{category}}">{{ message }}</li>
+                {% endif %}
               {% endfor %}
+              </ul>
+            </div>
             {% endif %}
           {% endwith %}
           {% block body %}{% endblock %}
