@@ -16,7 +16,11 @@
     {% if domainname %}
         {% if records %}
         <h3>
+        {% if g.templateName %}
+            Proposed Changes to {{domainname}} for {{g.templateName}} template:
+        {% else %}
             Found {{ records|length }} DNS records for {{domainname}} ({{domainobj.id}})
+        {% endif %}
         </h3>
             {% include "records.html" %}
         {% endif %}
