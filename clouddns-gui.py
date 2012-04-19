@@ -359,27 +359,30 @@ def apply_template(domainname=None, templateName=None):
     records = domain.get_records()
 
     # Load the Template
-    if templateName is None and 'templateName' in request.form:
-        # Perhaps prompt user for a template, or default
-        templateName = request.form['templateName']
-    else:
-        templateName = "googleApps" # default is google apps for now
+    if templateName is None:
+        if 'templateName' in request.form:
+            templateName = request.form['templateName']
+        else:
+            templateName = "googleApps" # default is google apps for now
 
 
     # TODO: Somehow sanitize templatename
     # Validate - this is nasty, but it will work for now
-    validTemplateNames = ['googleApps', 'testing']
+    validTemplateNames = ['googleApps', 'rackspace']
 
     if templateName not in validTemplateNames:
         flash('Invalid Template Name!', 'error')
         return redirect("/domains/%s" % domainname)
 
-    g.templateName = templateName # set the template name in g, so that html can see it
     templateFileName = 'dns/' + templateName + '.json'
     app.logger.debug('templateFileName: %s (will be overridden)' % templateFileName)
-    # Override for now
-    templateFileName = 'dns/googleApps.json'
     template = json.loads(render_template(templateFileName, domainname=domainname))
+
+    # Set the name for the GUI (HTML templates)
+    try:
+        g.templateName = template['info']['name']
+    except:
+        g.templateName = templateName
 
     # Process the Changes
     addRecords = jsonToRecordsList(template['records'])
