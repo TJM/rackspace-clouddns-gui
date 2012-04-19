@@ -1,0 +1,40 @@
+{
+  "info" : 
+  {
+    "name" : "Rackspace Mail",
+    "description" : "Apply basic Rackspace Mail MX and CNAMEs"
+  },
+  "records" : [
+  {
+    "name" : "{{domainname}}",
+    "priority" : 10,
+    "type" : "MX",
+    "data" : "mx1.emailsrvr.com",
+    "ttl" : 3600
+  }, {
+    "name" : "{{domainname}}",
+    "priority" : 20,
+    "type" : "MX",
+    "data" : "mx2.emailsrvr.com",
+    "ttl" : 3600
+  }, {
+    "name" : "mail.{{domainname}}",
+    "type" : "CNAME",
+    "comment" : "Rackspace Mail",
+    "data" : "mail.emailsrvr.com",
+    "ttl" : 3600
+  }, {
+    "name" : "webmail.{{domainname}}",
+    "type" : "CNAME",
+    "comment" : "Rackspace Webmail",
+    "data" : "mail.{{domainname}}",
+    "ttl" : 3600
+  } ],
+  "temp" : [ {
+    "name" : "{{domainname}}",
+    "type" : "TXT",
+    "comment" : "SPF Record",
+    "data" : "v=spf1 include:_spf.google.com a ~all",
+    "ttl" : 3600
+  } ]
+}

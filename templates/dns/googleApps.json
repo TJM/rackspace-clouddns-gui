@@ -1,4 +1,9 @@
 {
+  "info" : 
+  {
+    "name" : "Google Apps",
+    "description" : "Apply Google Apps configuration (MX, SPF, CNAMEs for services, SRV for Chat) 
+  },
   "records" : [
   {
     "name" : "{{domainname}}",
